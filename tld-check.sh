@@ -1,30 +1,32 @@
 #!/bin/bash
-echo "------------------------------"
-echo "|         TLD CHECK          |"
-echo "------------------------------"
-echo "| Usage: tld-check.sh [name] |"
-echo "------------------------------"
+echo " "
+echo " ------------------------------------------------"
+echo " | TLD CHECK - Find all TLDs of domain provided |"
+echo " ------------------------------------------------"
+echo " "
+echo " Usage: tld-check.sh [domain(.txt)]"
+echo " "
 
-if [ $# -eq 0 ]; then
-	printf "Enter a name: "
-	read -r DOMAIN
-else
-       DOMAIN=$1
-fi
+IFS=$'\r' GLOBIGNORE='*' command eval 'OUTPUT=($(curl -s https://data.iana.org/TLD/tlds-alpha-by-domain.txt | sed "1d"))'
 
-wget https://data.iana.org/TLD/tlds-alpha-by-domain.txt
+TLIST=($OUTPUT)
 
-FILE=tlds-alpha-by-domain.txt
-if [ -f "$FILE" ]; then
-	IFS=$'\r' GLOBIGNORE='*' command eval 'TLD=($(cat tlds-alpha-by-domain.txt))'
-	#echo $TLD
-	for i in $TLD
-		do
-			i="${DOMAIN}.${i}"
-			#echo "$i"
-			host ${i} | grep -i 'has address' | cut -d " " -f 1,4 
-		done
-	rm tlds-alpha-by-domain.txt
-else
-	echo "Error downloading TLD file."
-fi
+function read_file() {
+	if [ -f "$1" ]; then
+	IFS=$'\r' GLOBIGNORE='*' command eval 'OUTPUT=($(cat $1))'
+	else
+		OUTPUT=$1
+	fi
+}
+
+read_file $1
+DLIST=($OUTPUT)
+
+for ((i=0; i<${#DLIST[@]}; i++)); do
+	for ((a=0; a<${#TLIST[@]}; a++)); do
+    	DNAME="${DLIST[$i]}.${TLIST[$a]}"
+    	host ${DNAME} 1.1.1.1 | grep -i 'has address' | cut -d " " -f 1,4
+    done
+done
+
+
