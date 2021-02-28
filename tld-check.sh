@@ -25,7 +25,7 @@ DLIST=($OUTPUT)
 for ((i=0; i<${#DLIST[@]}; i++)); do
 	for ((a=0; a<${#TLIST[@]}; a++)); do
     	DNAME="${DLIST[$i]}.${TLIST[$a]}"
-    	host ${DNAME} 1.1.1.1 | grep -i 'has address' | cut -d " " -f 1,4
+    	host ${DNAME} 1.1.1.1 | grep -i 'has address' | cut -d " " -f 1,4 >> ${DLIST}-tld.txt
     done
 done
 
