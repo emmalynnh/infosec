@@ -7,12 +7,20 @@ from os import path
 # variables and settings
 ports = [21, 22, 23, 25, 53, 80, 110, 139, 143, 443, 445, 1433, 1521, 3306, 3389]
 
+# create and set arguments
+parser = argparse.ArgumentParser(description='Scan common ports on IPv4 address')
+parser.add_argument('ipaddress', help="IPv4 address")
+parser.add_argument('--timeout', '-t', type=int, help="Set connection timeout in seconds", default="6")
+parser.add_argument('--version', '-v', action="version", version="%(prog)s 1.0")
 
 # functions
 
 # try to connect
-def testconnect(srvconf):
+def testconnect():
 	try:
+		server_address = (addr, port)
+		sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		sock.settimeout(timeout)
 		sock.connect(server_address)
 		print("%s open" % port)
 		sock.close()		
@@ -24,32 +32,28 @@ def testconnect(srvconf):
 		if serr.errno != errno.ECONNREFUSED:
 			raise serr
 
-parser = argparse.ArgumentParser(description='Scan common ports on IPv4 address')
-parser.add_argument('ipaddress', help="IPv4 address")
-parser.add_argument('--timeout', '-t', type=int, help="Set connection timeout in seconds", default="6")
-parser.add_argument('--version', '-v', action="version", version="%(prog)s 1.0")
-
+# parse arguments
 args = parser.parse_args()
 
+# IPv4 Regex
 aa = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",args.ipaddress)
+
 
 timeout = args.timeout
 
+# reader either IP or file given
 if aa:
 	addr = args.ipaddress
 	print('Host/IP: %s' % addr)
 	# iterate over ports
 	for port in ports:
-		sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-		sock.settimeout(timeout)
-		server_address = (addr, port)
-		testconnect(server_address)
+		
+		testconnect()
 elif not aa and path.exists(args.ipaddress):
 
 	with open(args.ipaddress) as f:
 		for line in f:
 			parts = line.split()
-			print(parts)
 			if len(parts) > 1:
 				addr = parts[1]
 
@@ -57,10 +61,7 @@ elif not aa and path.exists(args.ipaddress):
 
 				# iterate over ports
 				for port in ports:
-					sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-					sock.settimeout(timeout)
-					server_address = (addr, port)
-					testconnect(server_address)
+					testconnect()
 				
 
 
