@@ -18,7 +18,7 @@ parser.add_argument('--version', '-v', action="version", version="%(prog)s 1.0")
 
 # try to connect
 def testconnect():
-	print('Host/IP: %s' % addr)
+	print('IP: %s' % addr)
 	# iterate over ports
 	for port in ports:
 		try:
@@ -53,12 +53,10 @@ elif not aa and path.exists(args.ipaddress):
 		for line in f:
 			parts = line.split()
 			if len(parts) > 1:
-				bb = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",parts[0])
-				if bb:
-					addr = parts[0]
-					testconnect()
-				else:
-					addr = parts[1]
-					testconnect()
+				for part in parts:
+					bb = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",part)
+					if bb:
+						addr = part
+						testconnect()
 else:
 	sys.exit("Please enter valid input")
