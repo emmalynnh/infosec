@@ -11,6 +11,7 @@ ports = [21, 22, 23, 25, 53, 80, 110, 139, 143, 443, 445, 1433, 1521, 3306, 3389
 parser = argparse.ArgumentParser(description='Scan common ports on IPv4 address')
 parser.add_argument('ipaddress', help="IPv4 address")
 parser.add_argument('--timeout', '-t', type=int, help="Set connection timeout in seconds", default="6")
+parser.add_argument('--verbose', '-V', action="store_true", help="Verbose")
 parser.add_argument('--version', '-v', action="version", version="%(prog)s 1.0")
 
 # functions
@@ -28,9 +29,10 @@ def testconnect():
 			print("%s open" % port)
 			sock.close()		
 		except socket.timeout:
-			print("%s timeout" % port)
+			if args.verbose:
+				print("%s timeout" % port)
 		except socket_error as serr:
-			if serr.errno == errno.ECONNREFUSED:
+			if serr.errno == errno.ECONNREFUSED and args.verbose:
 				print("%s closed" % port)
 			if serr.errno != errno.ECONNREFUSED:
 				raise serr
@@ -51,7 +53,12 @@ elif not aa and path.exists(args.ipaddress):
 		for line in f:
 			parts = line.split()
 			if len(parts) > 1:
-				addr = parts[1]
-				testconnect()
+				bb = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",parts[0])
+				if bb:
+					addr = parts[0]
+					testconnect()
+				else:
+					addr = parts[1]
+					testconnect()
 else:
 	sys.exit("Please enter valid input")
